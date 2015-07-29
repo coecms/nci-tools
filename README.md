@@ -14,3 +14,8 @@ ACCESS-OM                                 2            2   (100%)
 -----------------------------------------------------------
 Total                                     2            2   (100%)
 ```
+
+## install-python-lib
+
+Install a Python library to ~access/apps, and set up a corresponding module in
+~access/modules

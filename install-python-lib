@@ -1,0 +1,72 @@
+#!/bin/bash
+## \file    admin/install-python-lib.sh
+#  \author  Scott Wales (scott.wales@unimelb.edu.au)
+#  \brief   Install a python library to ~access
+#  
+#  Copyright 2013 ARC Centre of Excellence for Climate System Science
+#  
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#  
+#      http://www.apache.org/licenses/LICENSE-2.0
+#  
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+
+# Set new files to be group writable
+umask 0007
+
+libname=$1
+version=$2
+apps=~access/apps/pythonlib
+mods=~access/modules/pythonlib
+
+module load python/2.7.3
+module load python/2.7.3-matplotlib
+
+# If the version hasn't been set use the latest
+: ${version:=$(latest-pypi-version $libname)}
+if [ -z "$version" ]; then 
+    echo "Couldn't find any version of '$libname' on pypi" 1>&2
+    exit
+fi
+
+# Install the library
+installdir=$apps/$libname/$version
+mkdir -p $installdir
+export PYTHONPATH=$installdir:$PYTHONPATH
+easy_install --install-dir=$installdir $libname==$version
+
+# Install the module
+module=$mods/$libname/$version
+mkdir -p $(dirname $module)
+cat > $module << EOF
+#%Module
+
+set help            "Python library"
+set prefix           $installdir
+set install-contact "$USER"
+set install-date    "$(date --rfc-3339=date)"
+set url             "pypi.python.org/$libname"
+
+conflict pythonlib/$libname
+
+source /projects/access/modules/pythonlib/python2-prereqs
+
+prepend-path PYTHONPATH \$prefix
+prepend-path PATH \$prefix
+
+source /projects/access/modules/common
+EOF
+
+# Set file permissions
+chmod -R o+rX $(dirname $installdir)
+chmod -R o+rX $(dirname $module)
+chgrp -R access.admin $(dirname $installdir)
+chgrp -R access.admin $(dirname $module)
+
