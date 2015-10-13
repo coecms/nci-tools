@@ -26,8 +26,12 @@ version=$2
 apps=~access/apps/pythonlib
 mods=~access/modules/pythonlib
 
-module load python/2.7.3
-module load python/2.7.3-matplotlib
+python_version=2.7.3
+
+module purge
+
+module load python/${python_version}
+module load python/${python_version}-matplotlib
 
 # If the version hasn't been set use the latest
 : ${version:=$(~access/admin/latest-pypi-version $libname)}
@@ -35,6 +39,16 @@ if [ -z "$version" ]; then
     echo "Couldn't find any version of '$libname' on pypi" 1>&2
     exit
 fi
+
+# Install all existing pythonlib modules
+module use ${mods}
+for mod in ${mods}/*
+do
+  echo module load pythonlib/$(basename ${mod})
+  module load pythonlib/$(basename ${mod})
+done
+
+module list
 
 # Install the library
 installdir=$apps/$libname/$version
