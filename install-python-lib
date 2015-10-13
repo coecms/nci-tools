@@ -30,7 +30,7 @@ module load python/2.7.3
 module load python/2.7.3-matplotlib
 
 # If the version hasn't been set use the latest
-: ${version:=$(latest-pypi-version $libname)}
+: ${version:=$(~access/admin/latest-pypi-version $libname)}
 if [ -z "$version" ]; then 
     echo "Couldn't find any version of '$libname' on pypi" 1>&2
     exit
